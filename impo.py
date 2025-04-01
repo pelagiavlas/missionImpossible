@@ -5,7 +5,7 @@ It allows users to create, read, update, and delete products from the database.
 """
 import sqlite3
 from flask import Flask, request, jsonify
-from sqlalchemy.orm import query_expression
+
 
 app = Flask(__name__)
 
