@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import sqlite3
 
 app = Flask(__name__)
@@ -51,7 +51,33 @@ def delete_product(id):
     conn.commit()
     conn.close()
 
+# Routes
+@app.route('/products', methods=['GET'])
+def get_products():
+    products = get_marsProducts()
+    return jsonify(products)
+
+@app.route('/products', methods=['POST'])
+def create_product():
+    data = request.get_json()
+    add_product(data['productName'], data['quantity'])
+    return jsonify({"message": "Product added"}), 201
+
+@app.route('/products/<int:id>', methods=['PUT'])
+def update_product_route(id):
+    data = request.get_json()
+    update_product(id, data['productName'], data['quantity'])
+    return jsonify({"message": "Product updated"})
+
+@app.route('/products/<int:id>', methods=['DELETE'])
+def delete_product_route(id):
+    delete_product(id)
+    return jsonify({"message": "Product deleted"})
+
+
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+
 
