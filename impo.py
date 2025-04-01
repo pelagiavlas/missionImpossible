@@ -68,6 +68,11 @@ def delete_product(product_id):
     conn.close()
 
 # Routes
+@app.route('/')
+def index():
+    """start path"""
+    return "Welcome to Mars API!"
+
 @app.route('/products', methods=['GET'])
 def get_products():
     """Handles GET requests to fetch all products."""
