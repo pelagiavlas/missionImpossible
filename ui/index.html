@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Products CRUD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Mars Products</h1>
+
+    <!-- Form to add new product -->
+    <h3>Add New Product</h3>
+    <input type="text" id="productName" placeholder="Product Name" />
+    <input type="number" id="productQuantity" placeholder="Quantity" />
+    <button onclick="createProduct()">Add Product</button>
+
+    <hr>
+
+    <!-- Product list -->
+    <h3>Product List</h3>
+    <ul id="productList"></ul>
+
+    <hr>
+
+    <!-- Form to update a product -->
+    <h3>Update Product</h3>
+    <input type="number" id="updateProductId" placeholder="Product ID" />
+    <input type="text" id="updateProductName" placeholder="New Product Name" />
+    <input type="number" id="updateProductQuantity" placeholder="New Quantity" />
+    <button onclick="updateProduct()">Update Product</button>
+
+    <hr>
+
+    <!-- Form to delete a product -->
+    <h3>Delete Product</h3>
+    <input type="number" id="deleteProductId" placeholder="Product ID" />
+    <button onclick="deleteProduct()">Delete Product</button>
+</div>
+
+<script>
+    // Fetch and display products
+    function fetchProducts() {
+        fetch('http://localhost:5000/products')
+            .then(response => response.json())
+            .then(data => {
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // Clear the list
+                data.forEach(product => {
+                    const li = document.createElement('li');
+                    li.innerText = `ID: ${product[0]}, Name: ${product[1]}, Quantity: ${product[2]}`;
+                    productList.appendChild(li);
+                });
+            })
+            .catch(error => console.log('Error fetching products:', error));
+    }
+
+    // Create new product
+    function createProduct() {
+        const productName = document.getElementById('productName').value;
+        const productQuantity = document.getElementById('productQuantity').value;
+
+        if (productName && productQuantity) {
+            fetch('http://localhost:5000/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_name: productName,
+                    quantity: productQuantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchProducts(); // Refresh the product list
+            })
+            .catch(error => console.log('Error adding product:', error));
+        } else {
+            alert('Please fill in all fields.');
+        }
+    }
+
+    // Update product
+    function updateProduct() {
+        const productId = document.getElementById('updateProductId').value;
+        const productName = document.getElementById('updateProductName').value;
+        const productQuantity = document.getElementById('updateProductQuantity').value;
+
+        if (productId && productName && productQuantity) {
+            fetch(`http://localhost:5000/products/${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_name: productName,
+                    quantity: productQuantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchProducts(); // Refresh the product list
+            })
+            .catch(error => console.log('Error updating product:', error));
+        } else {
+            alert('Please fill in all fields.');
+        }
+    }
+
+    // Delete product
+    function deleteProduct() {
+        const productId = document.getElementById('deleteProductId').value;
+
+        if (productId) {
+            fetch(`http://localhost:5000/products/${productId}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchProducts(); // Refresh the product list
+            })
+            .catch(error => console.log('Error deleting product:', error));
+        } else {
+            alert('Please enter a product ID.');
+        }
+    }
+
+    // Fetch products when the page loads
+    window.onload = fetchProducts;
+</script>
+
+</body>
+</html>
