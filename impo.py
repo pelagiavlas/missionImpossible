@@ -4,6 +4,11 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 DB_PATH = "impossi.db"
+# Module docstring
+"""
+This module provides a simple Flask API for managing products in a Mars Products database.
+It allows users to create, read, update, and delete products from the database.
+"""
 
 # Database setup
 def init_db():
