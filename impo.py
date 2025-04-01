@@ -9,9 +9,9 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS marsProducts (
+        CREATE TABLE IF NOT EXISTS mars_products (
             product_id INTEGER PRIMARY KEY,
-            productName TEXT NOT NULL,
+            product_name TEXT NOT NULL,
             quantity INTEGER NOT NULL
         )
     ''')
