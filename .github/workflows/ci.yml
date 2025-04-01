@@ -30,7 +30,7 @@ jobs:
       - name: Run PyLint (Code Quality Check)
         run: |
           source venv/bin/activate
-          pylint app.py
+          pylint impo.py
 
       - name: Run Unit Tests (PyTest)
         run: |
