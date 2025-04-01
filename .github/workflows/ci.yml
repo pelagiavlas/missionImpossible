@@ -25,7 +25,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          pip install pytest pylint
+          pip install Flask==2.2.3 Werkzeug==2.2.3 pytest pylint
 
       - name: Set PYTHONPATH to current directory
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
