@@ -102,4 +102,3 @@ def delete_product_route(product_id):
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
-
