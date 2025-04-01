@@ -17,7 +17,7 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS marsProducts (
+        CREATE TABLE IF NOT EXISTS mars_products (
             product_id INTEGER PRIMARY KEY,
             product_name TEXT NOT NULL,
             quantity INTEGER NOT NULL
@@ -31,7 +31,7 @@ def get_mars_products():
     """Fetches all products from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM marsProducts')
+    cursor.execute('SELECT * FROM mars_products')
     mars_products = cursor.fetchall()
     conn.close()
     return mars_products
@@ -41,7 +41,7 @@ def add_product(product_name, quantity):
     """Adds a new product to the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    query = 'INSERT INTO marsProducts (product_name, quantity) VALUES (?, ?)'
+    query = 'INSERT INTO mars_products (product_name, quantity) VALUES (?, ?)'
     values = (product_name, quantity)
     cursor.execute(query, values)
     conn.commit()
@@ -52,7 +52,7 @@ def update_product(product_id, product_name, quantity):
     """Updates an existing product in the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    query = 'UPDATE marsProducts SET product_name = ?, quantity = ? WHERE product_id = ?'
+    query = 'UPDATE mars_products SET product_name = ?, quantity = ? WHERE product_id = ?'
     values = (product_name, quantity, product_id)
     cursor.execute(query, values)
     conn.commit()
@@ -63,7 +63,7 @@ def delete_product(product_id):
     """Deletes a product from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM marsProducts WHERE product_id = ?', (product_id,))
+    cursor.execute('DELETE FROM mars_products WHERE product_id = ?', (product_id,))
     conn.commit()
     conn.close()
 
