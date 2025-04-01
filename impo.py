@@ -1,14 +1,15 @@
-import sqlite3
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-DB_PATH = "impossi.db"
 # Module docstring
 """
 This module provides a simple Flask API for managing products in a Mars Products database.
 It allows users to create, read, update, and delete products from the database.
 """
+import sqlite3
+from flask import Flask, request, jsonify
+from sqlalchemy.orm import query_expression
+
+app = Flask(__name__)
+
+DB_PATH = "impossi.db"
 
 # Database setup
 def init_db():
@@ -40,7 +41,9 @@ def add_product(product_name, quantity):
     """Adds a new product to the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO marsProducts (product_name, quantity) VALUES (?, ?)', (product_name, quantity))
+    query = 'INSERT INTO marsProducts (product_name, quantity) VALUES (?, ?)'
+    values = (product_name, quantity)
+    cursor.execute(query, values)
     conn.commit()
     conn.close()
 
@@ -49,7 +52,9 @@ def update_product(product_id, product_name, quantity):
     """Updates an existing product in the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('UPDATE marsProducts SET product_name = ?, quantity = ? WHERE product_id = ?', (product_name, quantity, product_id))
+    query = 'UPDATE marsProducts SET product_name = ?, quantity = ? WHERE product_id = ?'
+    values = (product_name, quantity, product_id)
+    cursor.execute(query, values)
     conn.commit()
     conn.close()
 
