@@ -40,7 +40,7 @@ jobs:
           source venv/bin/activate
           pytest --disable-warnings --maxfail=3
 
-docker-build:
+  docker-build:
     runs-on: ubuntu-latest
     needs: test-and-lint
     steps:
@@ -70,7 +70,7 @@ docker-build:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/mars-frontend:latest
 
-docker-compose-up:
+  docker-compose-up:
     runs-on: ubuntu-latest
     needs: docker-build
     steps:
