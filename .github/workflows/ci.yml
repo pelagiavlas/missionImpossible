@@ -53,23 +53,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Build and Push Backend
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend
-          push: true
-          tags: |
-            ${{ env.DOCKER_HUB_REPO }}/${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.DOCKER_HUB_REPO }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-      - name: Build and Push Frontend
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ${{ env.DOCKER_HUB_REPO }}/${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.DOCKER_HUB_REPO }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
