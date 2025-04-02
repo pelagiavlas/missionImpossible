@@ -1,7 +1,6 @@
 import pytest
 import os
-from impo import app, init_db, DB_PATH
-
+from backend.impo import app, init_db, DB_PATH
 
 @pytest.fixture(scope='module')
 def setup_db():

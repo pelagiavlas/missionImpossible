@@ -1,4 +1,0 @@
-﻿Flask==2.2.3
-pytest==7.1.2
-pylint==2.12.2
-Werkzeug==2.2.3

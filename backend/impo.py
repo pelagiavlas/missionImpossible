@@ -3,15 +3,20 @@
 This module provides a simple Flask API for managing products in a Mars Products database.
 It allows users to create, read, update, and delete products from the database.
 """
+import os
 import sqlite3
-from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask import Flask, request, jsonify, send_from_directory
 
 
 app = Flask(__name__)
+CORS(app)
 
-users = []
+# Set the path for static and templates directories
+UI_FOLDER = os.path.join(os.getcwd(), 'ui')
+app._static_folder = os.path.join(UI_FOLDER, 'static')  # Set the static folder for JS and CSS
 
-DB_PATH = "impossi.db"
+DB_PATH = "/impossi.db"
 
 # Database setup
 def init_db():
@@ -70,23 +75,10 @@ def delete_product(product_id):
     conn.close()
 
 # Routes
-@app.route('/users', methods=['GET'])
-def get_users():
-    return jsonify(users)
-
-@app.route('/users', methods=['POST'])
-def add_user():
-    data = request.get_json()
-    name = data.get('name')
-    if name:
-        users.append({'name': name})
-        return jsonify({'message': 'User added successfully!'}), 201
-    return jsonify({'message': 'Name is required!'}), 400
-
 @app.route('/')
 def index():
-    """start path"""
-    return "Welcome to Mars API!"
+    return send_from_directory('/app/ui', 'index.html')
+
 
 @app.route('/products', methods=['GET'])
 def get_products():
@@ -98,8 +90,10 @@ def get_products():
 def create_product():
     """Handles POST requests to create a new product."""
     data = request.get_json()
-    add_product(data['product_name'], data['quantity'])
-    return jsonify({"message": "Product added"}), 201
+    if 'product_name' in data and 'quantity' in data:
+        add_product(data['product_name'], data['quantity'])
+        return jsonify({"message": "Product added"}), 201
+    return jsonify({"message": "Product name and quantity are required"}), 400
 
 @app.route('/products/<int:product_id>', methods=['PUT'])
 def update_product_route(product_id):
@@ -113,6 +107,11 @@ def delete_product_route(product_id):
     """Handles DELETE requests to delete a product."""
     delete_product(product_id)
     return jsonify({"message": "Product deleted"})
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 if __name__ == '__main__':
     init_db()

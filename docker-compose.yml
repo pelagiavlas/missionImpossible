@@ -1,13 +1,28 @@
 version: '3.8'
 
 services:
-  app:
-    image: missionimpossible
-    container_name: mission_app
+  backend:
+    build: ./backend
+    image: missionimpossible-backend
+    container_name: backend_app
+    volumes:
+      - ./ui:/app/ui  # Critical mount for frontend files
+      - ./backend/impossi.db:/app/impossi.db
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    networks:
+      - app-network
+
+  frontend:
+    build: ./ui
+    image: missionimpossible-frontend
+    container_name: frontend_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
     networks:
       - app-network
 
