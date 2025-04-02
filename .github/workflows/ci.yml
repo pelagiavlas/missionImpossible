@@ -47,22 +47,22 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          username: 'pelagiavlas'
+          password: dckr_pat_bVsdQ3t0ersLEts344E8qMpEnPY
 
       - name: Build and Push Backend Image
         uses: docker/build-push-action@v4
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/mars-backend:latest
+          tags: 'pelagiavlas'
 
       - name: Build and Push Frontend Image
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/mars-frontend:latest
+          tags: 'pelagiavlas'
 
   docker-compose-up:
     runs-on: ubuntu-latest
