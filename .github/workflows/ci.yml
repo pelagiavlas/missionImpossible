@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install Flask==2.2.3 Werkzeug==2.2.3 pytest pylint
+          pip install Flask==2.2.3 Werkzeug==2.2.3 pytest pylint flask-cors
 
       - name: Set PYTHONPATH to current directory
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV

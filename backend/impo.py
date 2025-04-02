@@ -1,117 +1,137 @@
-# Module docstring
 """
-This module provides a simple Flask API for managing products in a Mars Products database.
-It allows users to create, read, update, and delete products from the database.
+Mars Products API
+
+This module provides a RESTful API for managing products in a Mars Products database.
+It allows CRUD operations (Create, Read, Update, Delete) for products.
 """
+
 import os
 import sqlite3
 from flask_cors import CORS
 from flask import Flask, request, jsonify, send_from_directory
 
-
+# Initialize Flask application
 app = Flask(__name__)
 CORS(app)
 
-# Set the path for static and templates directories
+# Configuration
 UI_FOLDER = os.path.join(os.getcwd(), 'ui')
-app._static_folder = os.path.join(UI_FOLDER, 'static')  # Set the static folder for JS and CSS
-
 DB_PATH = "/impossi.db"
 
-# Database setup
+# Set static folder properly using Flask's public interface
+app.static_folder = os.path.join(UI_FOLDER, 'static')
+
+
+def get_db_connection():
+    """Create and return a database connection."""
+    return sqlite3.connect(DB_PATH)
+
+
 def init_db():
-    """Initializes the database by creating the table if it does not exist."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS mars_products (
-            product_id INTEGER PRIMARY KEY,
-            product_name TEXT NOT NULL,
-            quantity INTEGER NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    """Initialize the database by creating the table if it doesn't exist."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mars_products (
+                product_id INTEGER PRIMARY KEY,
+                product_name TEXT NOT NULL,
+                quantity INTEGER NOT NULL
+            )
+        ''')
+        conn.commit()
 
-# Get all the products
+
 def get_mars_products():
-    """Fetches all products from the database."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM mars_products')
-    mars_products = cursor.fetchall()
-    conn.close()
-    return mars_products
+    """Fetch all products from the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM mars_products')
+        return cursor.fetchall()
 
-# Add product to db
+
 def add_product(product_name, quantity):
-    """Adds a new product to the database."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    query = 'INSERT INTO mars_products (product_name, quantity) VALUES (?, ?)'
-    values = (product_name, quantity)
-    cursor.execute(query, values)
-    conn.commit()
-    conn.close()
+    """Add a new product to the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO mars_products (product_name, quantity) VALUES (?, ?)',
+            (product_name, quantity)
+        )
+        conn.commit()
 
-# Update product in db
+
 def update_product(product_id, product_name, quantity):
-    """Updates an existing product in the database."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    query = 'UPDATE mars_products SET product_name = ?, quantity = ? WHERE product_id = ?'
-    values = (product_name, quantity, product_id)
-    cursor.execute(query, values)
-    conn.commit()
-    conn.close()
+    """Update an existing product in the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            'UPDATE mars_products SET product_name = ?, quantity = ? WHERE product_id = ?',
+            (product_name, quantity, product_id)
+        )
+        conn.commit()
 
-# Delete product from db
+
 def delete_product(product_id):
-    """Deletes a product from the database."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM mars_products WHERE product_id = ?', (product_id,))
-    conn.commit()
-    conn.close()
+    """Delete a product from the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            'DELETE FROM mars_products WHERE product_id = ?',
+            (product_id,)
+        )
+        conn.commit()
 
-# Routes
+
 @app.route('/')
 def index():
+    """Serve the main index.html page."""
     return send_from_directory('/app/ui', 'index.html')
 
 
 @app.route('/products', methods=['GET'])
 def get_products():
-    """Handles GET requests to fetch all products."""
+    """Handle GET requests to fetch all products."""
     products = get_mars_products()
     return jsonify(products)
 
+
 @app.route('/products', methods=['POST'])
 def create_product():
-    """Handles POST requests to create a new product."""
+    """Handle POST requests to create a new product."""
     data = request.get_json()
-    if 'product_name' in data and 'quantity' in data:
-        add_product(data['product_name'], data['quantity'])
-        return jsonify({"message": "Product added"}), 201
-    return jsonify({"message": "Product name and quantity are required"}), 400
+
+    if not data or 'product_name' not in data or 'quantity' not in data:
+        return jsonify({"error": "Product name and quantity are required"}), 400
+
+    add_product(data['product_name'], data['quantity'])
+    return jsonify({"message": "Product added successfully"}), 201
+
 
 @app.route('/products/<int:product_id>', methods=['PUT'])
 def update_product_route(product_id):
-    """Handles PUT requests to update an existing product."""
+    """Handle PUT requests to update an existing product."""
     data = request.get_json()
+
+    if not data or 'product_name' not in data or 'quantity' not in data:
+        return jsonify({"error": "Product name and quantity are required"}), 400
+
     update_product(product_id, data['product_name'], data['quantity'])
-    return jsonify({"message": "Product updated"})
+    return jsonify({"message": "Product updated successfully"})
+
 
 @app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_product_route(product_id):
-    """Handles DELETE requests to delete a product."""
+    """Handle DELETE requests to delete a product."""
     delete_product(product_id)
-    return jsonify({"message": "Product deleted"})
+    return jsonify({"message": "Product deleted successfully"})
+
 
 @app.after_request
 def after_request(response):
+    """Add CORS headers to every response."""
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
+
 
 if __name__ == '__main__':
     init_db()
