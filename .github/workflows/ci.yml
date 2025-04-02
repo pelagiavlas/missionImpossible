@@ -48,7 +48,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: 'pelagiavlas'
-          password: dckr_pat_bVsdQ3t0ersLEts344E8qMpEnPY
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build and Push Backend Image
         uses: docker/build-push-action@v4
