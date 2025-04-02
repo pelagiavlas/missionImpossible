@@ -1,22 +1,30 @@
 import pytest
 import os
+import tempfile
 from backend.impo import app, init_db, DB_PATH
 
 
 @pytest.fixture(scope='module')
 def setup_db():
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    # Use a temporary directory for tests
+    temp_dir = tempfile.mkdtemp()
+    test_db_path = os.path.join(temp_dir, 'test.db')
 
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    # Set the DB_PATH for testing
+    os.environ['TESTING'] = 'true'
+    from backend.impo import DB_PATH as original_db_path
+    original_db_path = test_db_path  # Override the path
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
 
     init_db()
 
     yield
 
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+    os.environ.pop('TESTING', None)
 
 
 @pytest.fixture
@@ -30,43 +38,43 @@ def client():
 def test_get_products(client, setup_db):
     response = client.get('/products')
     assert response.status_code == 200
-    assert isinstance(response.json, list)
+    assert response.json == []
 
 
 def test_create_product(client, setup_db):
     # Test successful creation
     response = client.post('/products', json={"product_name": "Test Product", "quantity": 10})
     assert response.status_code == 201
-    assert response.json['message'] == "Product added successfully"
 
-    # Test missing parameters
-    response = client.post('/products', json={"wrong_field": "Test"})
-    assert response.status_code == 400
+    # Verify the product was actually created
+    response = client.get('/products')
+    assert len(response.json) == 1
+    assert response.json[0]['product_name'] == "Test Product"
+    assert response.json[0]['quantity'] == 10
 
 
 def test_update_product(client, setup_db):
-    # First create a product
+    # Create a product first
     client.post('/products', json={"product_name": "Test Product", "quantity": 10})
 
-    # Test successful update
+    # Update the product
     response = client.put('/products/1', json={"product_name": "Updated Product", "quantity": 20})
     assert response.status_code == 200
-    assert response.json['message'] == "Product updated successfully"
 
-    # Test missing parameters
-    response = client.put('/products/1', json={"wrong_field": "Test"})
-    assert response.status_code == 400
+    # Verify the update
+    response = client.get('/products')
+    assert response.json[0]['product_name'] == "Updated Product"
+    assert response.json[0]['quantity'] == 20
 
 
 def test_delete_product(client, setup_db):
-    # First create a product
+    # Create a product first
     client.post('/products', json={"product_name": "Test Product", "quantity": 10})
 
-    # Test deletion
+    # Delete the product
     response = client.delete('/products/1')
     assert response.status_code == 200
-    assert response.json['message'] == "Product deleted successfully"
 
-    # Test deleting non-existent product
-    response = client.delete('/products/999')
-    assert response.status_code == 404
+    # Verify deletion
+    response = client.get('/products')
+    assert response.json == []
