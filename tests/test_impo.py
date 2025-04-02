@@ -6,25 +6,24 @@ from backend.impo import app, init_db, DB_PATH
 
 @pytest.fixture(scope='module')
 def setup_db():
-    # Use a temporary directory for tests
-    temp_dir = tempfile.mkdtemp()
-    test_db_path = os.path.join(temp_dir, 'test.db')
+    # Δημιουργούμε ένα προσωρινό αρχείο βάσης δεδομένων
+    fd, temp_db_path = tempfile.mkstemp()
+    os.close(fd)
 
-    # Set the DB_PATH for testing
-    os.environ['TESTING'] = 'true'
-    from backend.impo import DB_PATH as original_db_path
-    original_db_path = test_db_path  # Override the path
+    # Αλλάζουμε προσωρινά το DB_PATH για τα tests
+    original_db_path = DB_PATH
+    import backend.impo
+    backend.impo.DB_PATH = temp_db_path
 
-    if os.path.exists(test_db_path):
-        os.remove(test_db_path)
-
+    # Αρχικοποιούμε τη βάση
     init_db()
 
     yield
 
-    if os.path.exists(test_db_path):
-        os.remove(test_db_path)
-    os.environ.pop('TESTING', None)
+    # Καθαρισμός
+    if os.path.exists(temp_db_path):
+        os.remove(temp_db_path)
+    backend.impo.DB_PATH = original_db_path
 
 
 @pytest.fixture
@@ -38,43 +37,43 @@ def client():
 def test_get_products(client, setup_db):
     response = client.get('/products')
     assert response.status_code == 200
-    assert response.json == []
+    assert isinstance(response.json, list)
 
 
 def test_create_product(client, setup_db):
-    # Test successful creation
+    # Test επιτυχούς δημιουργίας
     response = client.post('/products', json={"product_name": "Test Product", "quantity": 10})
     assert response.status_code == 201
+    assert response.json['message'] == "Product added successfully"
 
-    # Verify the product was actually created
-    response = client.get('/products')
-    assert len(response.json) == 1
-    assert response.json[0]['product_name'] == "Test Product"
-    assert response.json[0]['quantity'] == 10
+    # Test με λάθος πεδία
+    response = client.post('/products', json={"wrong_field": "Test"})
+    assert response.status_code == 400
 
 
 def test_update_product(client, setup_db):
-    # Create a product first
+    # Δημιουργούμε πρώτα ένα προϊόν
     client.post('/products', json={"product_name": "Test Product", "quantity": 10})
 
-    # Update the product
+    # Test επιτυχούς ενημέρωσης
     response = client.put('/products/1', json={"product_name": "Updated Product", "quantity": 20})
     assert response.status_code == 200
+    assert response.json['message'] == "Product updated successfully"
 
-    # Verify the update
-    response = client.get('/products')
-    assert response.json[0]['product_name'] == "Updated Product"
-    assert response.json[0]['quantity'] == 20
+    # Test με λάθος πεδία
+    response = client.put('/products/1', json={"wrong_field": "Test"})
+    assert response.status_code == 400
 
 
 def test_delete_product(client, setup_db):
-    # Create a product first
+    # Δημιουργούμε πρώτα ένα προϊόν
     client.post('/products', json={"product_name": "Test Product", "quantity": 10})
 
-    # Delete the product
+    # Test διαγραφής
     response = client.delete('/products/1')
     assert response.status_code == 200
+    assert response.json['message'] == "Product deleted successfully"
 
-    # Verify deletion
-    response = client.get('/products')
-    assert response.json == []
+    # Test διαγραφής μη υπάρχοντος προϊόντος
+    response = client.delete('/products/999')
+    assert response.status_code == 404

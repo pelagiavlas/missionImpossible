@@ -15,36 +15,30 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UI_FOLDER = os.path.join(BASE_DIR, 'ui')
-DB_PATH = os.path.join(BASE_DIR, 'impossi.db')  # Changed to relative path
+UI_FOLDER = os.path.join(os.getcwd(), 'ui')
+DB_PATH = "/impossi.db"
 
 # Set static folder properly using Flask's public interface
 app.static_folder = os.path.join(UI_FOLDER, 'static')
 
+
 def get_db_connection():
     """Create and return a database connection."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Return rows as dictionaries
-    return conn
+    return sqlite3.connect(DB_PATH)
+
 
 def init_db():
     """Initialize the database by creating the table if it doesn't exist."""
-    try:
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS mars_products (
-                    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    product_name TEXT NOT NULL,
-                    quantity INTEGER NOT NULL
-                )
-            ''')
-            conn.commit()
-    except Exception as e:
-        app.logger.error(f"Database initialization failed: {e}")
-        raise
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mars_products (
+                product_id INTEGER PRIMARY KEY,
+                product_name TEXT NOT NULL,
+                quantity INTEGER NOT NULL
+            )
+        ''')
+        conn.commit()
 
 
 def get_mars_products():
