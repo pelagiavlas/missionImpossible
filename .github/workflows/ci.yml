@@ -22,8 +22,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
           pip install -r requirements.txt
           pip install Flask==2.2.3 Werkzeug==2.2.3 pytest pylint
 
