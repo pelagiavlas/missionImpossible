@@ -29,7 +29,7 @@ jobs:
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Run PyLint (Code Quality Check)
-        run: pylint impo.py
+        run: pylint backend/impo.py
 
       - name: Run Unit Tests (PyTest)
         run: pytest --disable-warnings --maxfail=3
